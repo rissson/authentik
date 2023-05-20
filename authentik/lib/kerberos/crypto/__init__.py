@@ -1,0 +1,1 @@
+from authentik.lib.kerberos.crypto.des3_cbc_hmac_sha1_kd import Des3CbcHmacSha1Kd
