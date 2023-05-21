@@ -1,99 +1,46 @@
 from typing import Tuple
 
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+
 from authentik.lib.kerberos import iana
-from authentik.lib.kerberos.crypto.base import EncryptionType
+from authentik.lib.kerberos.crypto.base import Rfc3961
+from authentik.lib.kerberos.crypto.nfold import nfold
 
 
-class Des3CbcHmacSha1Kd(EncryptionType):
+class Des3CbcHmacSha1Kd(Rfc3961):
     ENC_TYPE = iana.EncryptionType.DES3_CBC_SHA1_KD
     CHECKSUM_TYPE = iana.ChecksumType.HMAC_SHA1_DES3_KD
 
     KEY_BYTES = 24
-    KEY_SEED_BYTES = 21
+    KEY_SEED_BITS = 21 * 8
 
     HMAC_BITS = 160
-    MESSAGE_BLOCK_BYTES = 1
+    MESSAGE_BLOCK_BYTES = 8
 
-    CYPHER_BLOCK_BITS = 8
-    CONFOUNDER_BYTES = 1
+    CYPHER_BLOCK_BITS = 8 * 8
+    CONFOUNDER_BYTES = 8
 
     DEFAULT_STRING_TO_KEY_PARAMS = ""
 
     HASH_FUNCTION = None
 
     @classmethod
-    def random_to_key(cls, data: bytes) -> bytes:
+    def encrypt_data(cls, key: bytes, data: bytes) -> bytes:
         """
-        Creates a protocol key from random bytes as defined in RFC 3961.
+        Encrypt raw data as defined in RFC 3961.
 
-        See https://www.rfc-editor.org/rfc/rfc3961#section-6.3.1
+        See https://www.rfc-editor.org/rfc/rfc3961
         """
-        if len(data) != cls.KEY_SEED_BYTES:
-            raise ValueError("invalid data length")
-
-        def stretch_56_bits(data: bytes) -> bytes:
-            def parity(b: int) -> Tuple[int, int]:
-                lowest_bit = b & 1
-                one_bits = 0
-                # Count the number of set bits
-                for i in range(1, 8):
-                    if b & (1 << i):
-                        one_bits += 1
-                if one_bits % 2 == 0:
-                    # Even number of 1 bits, parity is set as 1
-                    b |= 1
-                else:
-                    # Odd number of 1 bits, parity is set as 0
-                    b &= ~1
-                return b, lowest_bit
-
-            result = bytes()
-            last_byte = 0
-            for i in range(7):
-                p, lowest_bit = parity(data[i])
-                result += bytes([p])
-                if lowest_bit == 1:
-                    # If lowest bit was 1, set it in the last byte
-                    # If it was 0, leave as is, as it's already 0
-                    last_byte |= 1 << (i + 1)
-
-            # Parity for last byte
-            p, _ = parity(last_byte)
-            result += bytes([p])
-
-            return result
-
-        result = bytes()
-        for i in range(0, 21, 7):
-            result += stretch_56_bits(data[i : i + 8])
-
-        def fix_weak_keys(b: bytes) -> bytes:
-            """
-            See https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-67r2.pdf for a list of such keys.
-            """
-            weak_keys = [
-                bytes([0x01] * 8),
-                bytes([0xFE] * 8),
-                bytes([0xE0] * 4 + [0xF1] * 4),
-                bytes([0x1F] * 4 + [0x0E] * 4),
-            ]
-            semi_weak_keys = [
-                bytes([0x01, 0x1F, 0x01, 0x1F, 0x01, 0x0E, 0x01, 0x0E]),
-                bytes([0x1F, 0x01, 0x1F, 0x01, 0x0E, 0x01, 0x0E, 0x01]),
-                bytes([0x01, 0xE0, 0x01, 0xE0, 0x01, 0xF1, 0x01, 0xF1]),
-                bytes([0xE0, 0x01, 0xE0, 0x01, 0xF1, 0x01, 0xF1, 0x01]),
-                bytes([0x01, 0xFE, 0x01, 0xFE, 0x01, 0xFE, 0x01, 0xFE]),
-                bytes([0xFE, 0x01, 0xFE, 0x01, 0xFE, 0x01, 0xFE, 0x01]),
-                bytes([0x1F, 0xE0, 0x1F, 0xE0, 0x0E, 0xF1, 0x0E, 0xF1]),
-                bytes([0xE0, 0x1F, 0xE0, 0x1F, 0xF1, 0x0E, 0xF1, 0x0E]),
-                bytes([0x1F, 0xFE, 0x1F, 0xFE, 0x0E, 0xFE, 0x0E, 0xFE]),
-                bytes([0xFE, 0x1F, 0xFE, 0x1F, 0xFE, 0x0E, 0xFE, 0x0E]),
-                bytes([0xE0, 0xFE, 0xE0, 0xFE, 0xF1, 0xFE, 0xF1, 0xFE]),
-                bytes([0xFE, 0xE0, 0xFE, 0xE0, 0xFE, 0xF1, 0xFE, 0xF1]),
-            ]
-
-            if b in weak_keys or b in semi_weak_keys:
-                return b[0:7] + bytes([b[7] ^ 0xF0])
-            return b
-
-        return fix_weak_keys(result)
+        cipher = Cipher(
+            algorithms.TripleDES(key),
+            # All bits at 0 for the initial cypher state, as per the RFC
+            modes.CBC(bytes([0] * (cls.CYPHER_BLOCK_BITS // 8))),
+        )
+        encryptor = cipher.encryptor()
+        ct = encryptor.update(data) + encryptor.finalize()
+        # print("pt_in: ", data)
+        # print("ct: ", ct)
+        # decryptor = cipher.decryptor()
+        # print("pt_out:", decryptor.update(ct) + decryptor.finalize())
+        # return encryptor.update(data) + encryptor.finalize()
+        return ct

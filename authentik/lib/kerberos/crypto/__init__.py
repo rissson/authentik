@@ -1,1 +1,2 @@
+from authentik.lib.kerberos.crypto.aes128_cts_hmac_sha1_96 import Aes128CtsHmacSha196
 from authentik.lib.kerberos.crypto.des3_cbc_hmac_sha1_kd import Des3CbcHmacSha1Kd
