@@ -171,6 +171,7 @@ xmlsec = "*"
 zxcvbn = "*"
 watchdog = "*"
 pydantic-scim = "^0.0.7"
+asn1crypto = "*"
 
 [tool.poetry.dev-dependencies]
 bandit = "*"
