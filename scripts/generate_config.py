@@ -12,9 +12,13 @@ with open("local.env.yml", "w", encoding="utf-8") as _config:
             "secret_key": generate_id(),
             "postgresql": {
                 "user": "postgres",
+                "port": 5435,
                 "read_replicas": {
                     "0": {},
                 },
+            },
+            "redis": {
+                "port": 6375,
             },
             "outposts": {
                 "container_image_base": "ghcr.io/goauthentik/dev-%(type)s:gh-%(build_hash)s",

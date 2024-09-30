@@ -1,0 +1,27 @@
+[workspace]
+members = ["crates/*"]
+default-members = ["crates/*"]
+resolver = "2"
+
+[workspace.package]
+rust-version = "1.81"
+
+[workspace.dependencies]
+
+# Default release profile, select with `--release`
+[profile.release]
+lto = true
+
+# Default development profile; default for most Cargo commands, otherwise
+# selected with `--debug`
+[profile.dev]
+# Saves a lot of disk space. If symbols are needed, use the dbg profile.
+debug = 0
+
+[profile.dev.package]
+sha2 = { opt-level = 2 }
+
+# Custom profile with full debugging info, use `--profile dbg` to select
+[profile.dbg]
+inherits = "dev"
+debug = 2

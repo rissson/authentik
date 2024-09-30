@@ -1,6 +1,5 @@
 services:
   postgresql:
-    container_name: postgres
     image: docker.io/library/postgres:16
     volumes:
       - db-data:/var/lib/postgresql/data
@@ -8,16 +7,14 @@ services:
       POSTGRES_HOST_AUTH_METHOD: trust
       POSTGRES_DB: authentik
     ports:
-      - 127.0.0.1:5432:5432
+      - 127.0.0.1:5435:5432
     restart: always
   redis:
-    container_name: redis
     image: docker.io/library/redis
     ports:
-      - 127.0.0.1:6379:6379
+      - 127.0.0.1:6375:6379
     restart: always
   s3:
-    container_name: s3
     image: docker.io/zenko/cloudserver
     environment:
       REMOTE_MANAGEMENT_DISABLE: "1"
