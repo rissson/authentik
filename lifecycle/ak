@@ -2,7 +2,7 @@
 MODE_FILE="${TMPDIR}/authentik-mode"
 
 function log {
-    printf '{"event": "%s", "level": "info", "logger": "bootstrap"}\n' "$@" > /dev/stderr
+    printf '{"event": "%s", "level": "info", "logger": "bootstrap"}\n' "$@" >/dev/stderr
 }
 
 function wait_for_db {
@@ -40,12 +40,12 @@ function run_authentik {
     if [[ -x "$(command -v authentik)" ]]; then
         exec authentik $@
     else
-        exec go run -v ./cmd/server/ $@
+        exec cargo run --bin authentik-server $@
     fi
 }
 
 function set_mode {
-    echo $1 > $MODE_FILE
+    echo $1 >$MODE_FILE
     trap cleanup EXIT
 }
 
