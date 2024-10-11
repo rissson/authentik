@@ -1,0 +1,15 @@
+[package]
+name = "authentik-providers-oauth2"
+version = "2024.8.3"
+edition = "2021"
+rust-version.workspace = true
+
+[dependencies]
+authentik-common = { path = "../common" }
+authentik-core = { path = "../core" }
+authentik-orm-utils = { path = "../orm-utils" }
+authentik-orm-macros = { path = "../orm-macros" }
+
+chrono = { workspace = true }
+sea-orm = { workspace = true }
+serde = { workspace = true }

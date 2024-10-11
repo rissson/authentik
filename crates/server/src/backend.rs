@@ -1,4 +1,8 @@
-use std::{path::PathBuf, process::Command};
+use std::{
+    path::PathBuf,
+    process::Command,
+    sync::atomic::{AtomicBool, Ordering},
+};
 
 use anyhow::{Result, anyhow};
 use authentik_common::SETTINGS;
@@ -225,12 +229,14 @@ pub(crate) async fn run(backend_uri: Uri, mut handle_rx: Receiver<Signal>) -> Re
     let mut backend = Backend::new()?;
     backend.start()?;
 
+    let running = AtomicBool::new(true);
+
     tokio::try_join!(
         async {
             let max_fails = 100;
             let mut failed_checks = 0;
             let mut interval = interval(Duration::from_secs(1));
-            while failed_checks < max_fails {
+            while failed_checks < max_fails && running.load(Ordering::Relaxed) {
                 tracing::debug!("waiting for backend to be healthy");
                 if let Ok(()) = healthcheck(backend_uri.clone()).await {
                     break;
@@ -273,6 +279,7 @@ pub(crate) async fn run(backend_uri: Uri, mut handle_rx: Receiver<Signal>) -> Re
                     Err(_) => continue,
                 }
             }
+            running.store(false, Ordering::Relaxed);
             Ok(())
         }
     )

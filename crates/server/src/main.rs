@@ -10,7 +10,9 @@ use tokio::{
 use tracing_subscriber::prelude::*;
 
 mod backend;
+mod crypto;
 mod metrics;
+mod utils;
 mod web;
 
 async fn signal_handler(
@@ -67,6 +69,26 @@ async fn signal_handler(
     Ok(())
 }
 
+fn sentry_init() -> Option<sentry::ClientInitGuard> {
+    if SETTINGS.error_reporting.enabled {
+        let guard = sentry::init((SETTINGS.error_reporting.sentry_dsn.clone(), sentry::ClientOptions {
+            release: Some(std::borrow::Cow::Owned(format!("authentik@{}", constants::VERSION))),
+            environment: Some(std::borrow::Cow::Owned(SETTINGS.error_reporting.environment.clone())),
+            traces_sample_rate: SETTINGS.error_reporting.sample_rate,
+            // traces_sampler: TODO: configure this
+            attach_stacktrace: true,
+            send_default_pii: SETTINGS.error_reporting.send_pii,
+            // TODO: make this a helper and support build hash
+            user_agent: format!("authentik@{}", constants::VERSION).into(),
+            session_mode: sentry::SessionMode::Request,
+            default_integrations: true,
+            ..Default::default()
+        }));
+        return Some(guard);
+    }
+    None
+}
+
 fn tracing_init() {
     use tracing_subscriber::{
         filter::LevelFilter,
@@ -94,22 +116,7 @@ fn tracing_init() {
 }
 
 fn main() {
-    if SETTINGS.error_reporting.enabled {
-        let _guard = sentry::init((SETTINGS.error_reporting.sentry_dsn.clone(), sentry::ClientOptions {
-            release: Some(std::borrow::Cow::Owned(format!("authentik@{}", constants::VERSION))),
-            environment: Some(std::borrow::Cow::Owned(SETTINGS.error_reporting.environment.clone())),
-            traces_sample_rate: SETTINGS.error_reporting.sample_rate,
-            // traces_sampler: TODO: configure this
-            attach_stacktrace: true,
-            send_default_pii: SETTINGS.error_reporting.send_pii,
-            // TODO: make this a helper and support build hash
-            user_agent: format!("authentik@{}", constants::VERSION).into(),
-            session_mode: sentry::SessionMode::Request,
-            default_integrations: true,
-            ..Default::default()
-        }));
-    }
-
+    let _guard = sentry_init();
     tracing_init();
 
     tokio::runtime::Builder::new_multi_thread()
@@ -129,7 +136,12 @@ fn main() {
             tokio::try_join!(
                 metrics::run(Some(backend_uri.clone()), axum_handles_tx.subscribe()),
                 backend::run(backend_uri.clone(), backend_handles_rx),
-                web::run(backend_uri.clone(), axum_handles_rx, backend_handles_tx.clone()),
+                web::run_plain(
+                    backend_uri.clone(),
+                    axum_handles_tx.subscribe(),
+                    backend_handles_tx.clone()
+                ),
+                web::run_tls(backend_uri.clone(), axum_handles_rx),
                 signal_handler(axum_handles_tx, backend_handles_tx),
             )
             .unwrap();

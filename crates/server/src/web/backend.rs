@@ -1,38 +1,18 @@
-use std::time::Duration;
-
 use anyhow::Result;
-use authentik_common::SETTINGS;
 use axum::{
-    Router,
     extract::{
         Request, State, WebSocketUpgrade,
         ws::{self, WebSocket},
     },
+    http::StatusCode,
     response::{IntoResponse, Response},
 };
-use axum_server::Handle;
 use futures::{sink::SinkExt, stream::StreamExt};
-use http::uri::Parts;
-use hyper::{StatusCode, Uri};
-use nix::sys::signal::Signal;
-use tokio::sync::broadcast::{Receiver, Sender};
+use hyper::Uri;
 use tokio_tungstenite::tungstenite::{self as ts};
 
-use crate::backend::BackendClient;
-
-mod assets;
-
-#[derive(Clone)]
-struct WebState {
-    backend_uri: Uri,
-    backend_client: BackendClient,
-}
-
-fn make_uri_parts(backend_uri: &Uri, req: &Request) -> Parts {
-    let mut parts = backend_uri.clone().into_parts();
-    parts.path_and_query = req.uri().path_and_query().cloned();
-    parts
-}
+use super::WebState;
+use crate::utils::make_uri_parts;
 
 async fn handle_request(state: WebState, mut req: Request) -> Result<Response, StatusCode> {
     *req.uri_mut() =
@@ -123,70 +103,18 @@ async fn proxy_ws(backend_uri: Uri, client_socket: WebSocket, req: Request) {
     let _ = backend_sender.close().await;
 }
 
-async fn handle_ws(backend_uri: Uri, ws: WebSocketUpgrade, req: Request) -> impl IntoResponse {
+fn handle_ws(backend_uri: Uri, ws: WebSocketUpgrade, req: Request) -> impl IntoResponse {
     ws.on_upgrade(move |socket| proxy_ws(backend_uri, socket, req))
 }
 
-async fn proxy_to_backend(
+pub(super) async fn proxy_to_backend(
     State(state): State<WebState>,
     ws: Option<WebSocketUpgrade>,
     req: Request,
 ) -> impl IntoResponse {
     if let Some(ws) = ws {
-        handle_ws(state.backend_uri.clone(), ws, req).await.into_response()
+        handle_ws(state.backend_uri, ws, req).into_response()
     } else {
         handle_request(state, req).await.into_response()
     }
-}
-
-async fn signal_handler(handle: Handle, mut handle_rx: Receiver<Signal>, backend_handle_tx: Sender<Signal>) {
-    loop {
-        match handle_rx.recv().await {
-            Ok(signal) => match signal {
-                Signal::SIGINT | Signal::SIGQUIT => {
-                    // Quick shutdown
-                    handle.shutdown();
-                    break;
-                }
-                Signal::SIGTERM => {
-                    // Graceful shutdown
-                    handle.graceful_shutdown(Some(Duration::from_secs(30)));
-                    let _ = backend_handle_tx.send(Signal::SIGTERM);
-                    break;
-                }
-                _ => {
-                    // Signal is not for us
-                    continue;
-                }
-            },
-            Err(_) => continue,
-        }
-    }
-}
-
-pub(crate) async fn run(
-    backend_uri: Uri,
-    handle_rx: Receiver<Signal>,
-    backend_handle_tx: Sender<Signal>,
-) -> Result<()> {
-    let backend_client = BackendClient::new(&backend_uri);
-    let app = Router::new()
-        .merge(assets::make_router())
-        .layer(
-            tower_http::trace::TraceLayer::new_for_http()
-                .on_response(tower_http::trace::DefaultOnResponse::new().level(tracing::Level::INFO)),
-        )
-        .layer(sentry::integrations::tower::SentryLayer::new_from_top())
-        .fallback(proxy_to_backend)
-        .with_state(WebState {
-            backend_uri,
-            backend_client,
-        });
-    let handle = Handle::new();
-    tokio::spawn(signal_handler(handle.clone(), handle_rx, backend_handle_tx));
-    axum_server::bind(SETTINGS.listen.http)
-        .handle(handle)
-        .serve(app.into_make_service())
-        .await?;
-    Ok(())
 }

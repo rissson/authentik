@@ -1,5 +1,3 @@
-use std::time::Duration;
-
 use anyhow::Result;
 use authentik_common::SETTINGS;
 use axum::{
@@ -12,6 +10,8 @@ use axum_server::Handle;
 use hyper::{StatusCode, Uri};
 use nix::sys::signal::Signal;
 use tokio::sync::broadcast::Receiver;
+
+use crate::utils::signal_handler;
 
 async fn handler(State(_backend_uri): State<Option<Uri>>) -> Result<Response, StatusCode> {
     use prometheus::Encoder;
@@ -33,30 +33,6 @@ async fn handler(State(_backend_uri): State<Option<Uri>>) -> Result<Response, St
     // TODO: handle backend_uri
 
     Ok(res.into_response())
-}
-
-async fn signal_handler(handle: Handle, mut handle_rx: Receiver<Signal>) {
-    loop {
-        match handle_rx.recv().await {
-            Ok(signal) => match signal {
-                Signal::SIGINT | Signal::SIGQUIT => {
-                    // Quick shutdown
-                    handle.shutdown();
-                    break;
-                }
-                Signal::SIGTERM => {
-                    // Graceful shutdown
-                    handle.graceful_shutdown(Some(Duration::from_secs(30)));
-                    break;
-                }
-                _ => {
-                    // Signal is not for us
-                    continue;
-                }
-            },
-            Err(_) => continue,
-        }
-    }
 }
 
 pub(crate) async fn run(backend_uri: Option<Uri>, handle_rx: Receiver<Signal>) -> Result<()> {

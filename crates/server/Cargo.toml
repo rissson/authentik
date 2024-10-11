@@ -5,7 +5,8 @@ edition = "2021"
 rust-version.workspace = true
 
 [dependencies]
-authentik-common = { path = "../authentik-common" }
+authentik-common = { path = "../common" }
+authentik-providers-oauth2 = { path = "../providers-oauth2" }
 
 anyhow = { workspace = true }
 axum = { workspace = true }
@@ -16,8 +17,11 @@ hyper = { workspace = true }
 hyper-util = { workspace = true }
 hyperlocal = { workspace = true }
 nix = { workspace = true }
+openssl = { workspace = true }
 prometheus = { workspace = true }
+sea-orm = { workspace = true }
 sentry = { workspace = true }
+serde = { workspace = true }
 tempfile = { workspace = true }
 tokio = { workspace = true }
 tokio-tungstenite = { workspace = true }
