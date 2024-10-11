@@ -8,7 +8,7 @@ pub fn expiring_model(args: TokenStream, input: TokenStream) -> TokenStream {
     let _ = parse_macro_input!(args as parse::Nothing);
 
     if let syn::Fields::Named(ref mut fields) = item_struct.fields {
-        for field in vec![
+        for field in [
             quote! { pub expires: DateTimeWithTimeZone },
             quote! { pub expiring: bool },
         ] {
