@@ -8,6 +8,7 @@ rust-version = "1.81"
 
 [workspace.dependencies]
 anyhow = "1.0.89"
+async-trait = "0.1.83"
 authentik-common = { path = "../authentik-common" }
 axum = { version = "0.7.7", features = ["http2", "ws"] }
 axum-server = { version = "0.7.1", features = ["tls-openssl"] }

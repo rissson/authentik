@@ -181,7 +181,9 @@ dependencies = [
 name = "authentik-orm-utils"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
  "authentik-orm-macros",
+ "sea-orm",
 ]
 
 [[package]]

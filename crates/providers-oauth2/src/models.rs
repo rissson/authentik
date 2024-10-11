@@ -38,7 +38,7 @@ pub mod access_token {
     use sea_orm::entity::prelude::*;
     use serde::{Deserialize, Serialize};
     #[expiring_model]
-    #[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel, Serialize, Deserialize, DeriveExpiringModel)]
+    #[derive(Clone, Debug, PartialEq, Eq, DeriveEntityModel, Serialize, Deserialize, DeriveExpiringModel, DeriveExpiringModelAction)]
     #[sea_orm(table_name = "authentik_providers_oauth2_accesstoken")]
     pub struct Model {
         #[sea_orm(primary_key)]

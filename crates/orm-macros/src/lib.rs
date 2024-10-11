@@ -36,3 +36,25 @@ pub fn derive_expiring_model(input: TokenStream) -> TokenStream {
         }
     }.into()
 }
+
+#[proc_macro_derive(DeriveExpiringModelAction)]
+pub fn derive_expiring_model_action(input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+    let name = input.ident;
+
+    quote! {
+        #[async_trait::async_trait]
+        impl ExpiringModelAction for #name {
+            type Entity = Entity;
+
+            async fn expire_action<'a, A, C>(self, db: &'a C) -> Result<sea_orm::DeleteResult, DbErr>
+            where
+                Self: sea_orm::IntoActiveModel<A>,
+                C: ConnectionTrait,
+                A: ActiveModelTrait<Entity = Self::Entity> + ActiveModelBehavior + Send + 'a,
+            {
+                self.delete(db).await
+            }
+        }
+    }.into()
+}

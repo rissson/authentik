@@ -6,3 +6,6 @@ rust-version.workspace = true
 
 [dependencies]
 authentik-orm-macros = { path = "../orm-macros" }
+
+async-trait = { workspace = true }
+sea-orm = { workspace = true }
