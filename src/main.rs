@@ -1,5 +1,4 @@
 use anyhow::Result;
-use authentik_common::{SETTINGS, constants};
 use hyper::Uri;
 use hyperlocal::Uri as UnixUri;
 use nix::sys::signal::Signal;
@@ -9,9 +8,16 @@ use tokio::{
 };
 use tracing_subscriber::prelude::*;
 
+use crate::common::{SETTINGS, constants};
+
 mod backend;
+mod common;
+mod core;
 mod crypto;
 mod metrics;
+mod orm;
+mod providers;
+mod server;
 mod utils;
 mod web;
 

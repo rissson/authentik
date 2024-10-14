@@ -2,7 +2,7 @@ use axum::extract::FromRef;
 use http::Uri;
 use sea_orm::DatabaseConnection;
 
-use crate::backend::BackendClient;
+use crate::server::utils::backend::BackendClient;
 
 #[derive(Clone)]
 pub struct AppState {

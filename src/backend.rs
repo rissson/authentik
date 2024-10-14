@@ -5,8 +5,6 @@ use std::{
 };
 
 use anyhow::{Result, anyhow};
-use authentik_common::SETTINGS;
-use authentik_server_utils::backend::BackendClient;
 use axum::body::Body;
 use http::uri::PathAndQuery;
 use hyper::{Method, Request, Uri};
@@ -19,6 +17,8 @@ use tokio::{
     sync::broadcast::Receiver,
     time::{Duration, interval},
 };
+
+use crate::{common::SETTINGS, server::utils::backend::BackendClient};
 
 struct Backend {
     command: Command,

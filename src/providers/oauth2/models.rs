@@ -16,14 +16,14 @@ pub mod oauth2_provider {
     #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
     pub enum Relation {
         #[sea_orm(
-            belongs_to = "authentik_core::models::provider::Entity",
+            belongs_to = "crate::core::models::provider::Entity",
             from = "Column::ProviderPtrId",
-            to = "authentik_core::models::provider::Column::Id"
+            to = "crate::core::models::provider::Column::Id"
         )]
         Provider,
     }
 
-    impl Related<authentik_core::models::provider::Entity> for Entity {
+    impl Related<crate::core::models::provider::Entity> for Entity {
         fn to() -> RelationDef {
             Relation::Provider.def()
         }
@@ -34,11 +34,10 @@ pub mod oauth2_provider {
 pub use oauth2_provider::Entity as OAuth2Provider;
 
 pub mod access_token {
-    use authentik_orm_utils::prelude::*;
     use sea_orm::entity::prelude::*;
     use serde::{Deserialize, Serialize};
 
-    use crate::id_token::IDToken;
+    use crate::{orm::utils::prelude::*, providers::oauth2::id_token::IDToken};
     #[expiring_model]
     #[derive(
         Clone, Debug, PartialEq, Eq, DeriveEntityModel, Serialize, Deserialize, ExpiringModel, ExpiringModelAction,
@@ -90,11 +89,10 @@ pub mod access_token {
 pub use access_token::Entity as AccessToken;
 
 pub mod refresh_token {
-    use authentik_orm_utils::prelude::*;
     use sea_orm::entity::prelude::*;
     use serde::{Deserialize, Serialize};
 
-    use crate::id_token::IDToken;
+    use crate::{orm::utils::prelude::*, providers::oauth2::id_token::IDToken};
     #[expiring_model]
     #[derive(
         Clone, Debug, PartialEq, Eq, DeriveEntityModel, Serialize, Deserialize, ExpiringModel, ExpiringModelAction,

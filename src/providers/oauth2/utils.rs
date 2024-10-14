@@ -2,7 +2,7 @@ use axum::http::header::{HeaderMap, HeaderValue};
 use http_auth_basic::Credentials;
 use sea_orm::{DbErr, entity::prelude::*};
 
-use crate::models::{OAuth2Provider, oauth2_provider};
+use crate::providers::oauth2::models::{OAuth2Provider, oauth2_provider};
 
 pub(crate) struct ClientCredentials {
     client_id: String,

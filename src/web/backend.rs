@@ -1,5 +1,4 @@
 use anyhow::Result;
-use authentik_server_utils::state::AppState;
 use axum::{
     extract::{
         Request, State, WebSocketUpgrade,
@@ -12,7 +11,7 @@ use futures::{sink::SinkExt, stream::StreamExt};
 use hyper::Uri;
 use tokio_tungstenite::tungstenite::{self as ts};
 
-use crate::utils::make_uri_parts;
+use crate::{server::utils::state::AppState, utils::make_uri_parts};
 
 async fn handle_request(state: AppState, mut req: Request) -> Result<Response, StatusCode> {
     *req.uri_mut() =

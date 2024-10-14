@@ -1,5 +1,4 @@
 use anyhow::Result;
-use authentik_common::SETTINGS;
 use axum::{
     Router,
     extract::State,
@@ -11,7 +10,7 @@ use hyper::{StatusCode, Uri};
 use nix::sys::signal::Signal;
 use tokio::sync::broadcast::Receiver;
 
-use crate::utils::signal_handler;
+use crate::{common::SETTINGS, utils::signal_handler};
 
 async fn handler(State(_backend_uri): State<Option<Uri>>) -> Result<Response, StatusCode> {
     use prometheus::Encoder;

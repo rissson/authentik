@@ -1,8 +1,6 @@
 use std::time::Duration;
 
 use anyhow::Result;
-use authentik_common::SETTINGS;
-use authentik_server_utils::{backend::BackendClient, state::AppState};
 use axum::Router;
 use axum_server::{Handle, tls_openssl::OpenSSLConfig};
 use hyper::Uri;
@@ -11,7 +9,9 @@ use sea_orm::Database;
 use tokio::sync::broadcast::{Receiver, Sender};
 
 use crate::{
+    common::SETTINGS,
     crypto::{generate_self_signed_cert, get_tls_acceptor_builder},
+    server::utils::{backend::BackendClient, state::AppState},
     utils::signal_handler,
 };
 

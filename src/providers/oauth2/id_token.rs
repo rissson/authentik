@@ -4,8 +4,6 @@ use derivative::Derivative;
 use either::Either;
 use serde::{Deserialize, Serialize};
 
-use crate::constants;
-
 /// Mode after which `sub` attribute is generated, for compatibility reasons
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub(crate) enum SubModes {
@@ -48,7 +46,7 @@ pub(crate) struct IDToken {
     auth_time: Option<u64>,
     /// Authentication Context Class Reference,
     /// https://openid.net/specs/openid-connect-core-1_0.html#IDToken
-    #[derivative(Default(value = "Some(constants::ACR_AUTHENTIK_DEFAULT.to_owned())"))]
+    #[derivative(Default(value = "Some(super::constants::ACR_AUTHENTIK_DEFAULT.to_owned())"))]
     acr: Option<String>,
     /// Authentication Methods References,
     /// https://openid.net/specs/openid-connect-core-1_0.html#IDToken

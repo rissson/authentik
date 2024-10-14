@@ -1,13 +1,15 @@
-use authentik_orm_utils::expiring_model::ExpiringModel;
-use authentik_server_utils::errors::Result;
 use axum::{Form, Json, extract::State, http::header::HeaderMap, response::IntoResponse};
 use sea_orm::{DatabaseConnection, entity::prelude::*};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    id_token::IDToken,
-    models::{AccessToken, access_token, RefreshToken, refresh_token},
-    utils::authenticate_provider,
+    orm::utils::expiring_model::ExpiringModel,
+    providers::oauth2::{
+        id_token::IDToken,
+        models::{AccessToken, RefreshToken, access_token, refresh_token},
+        utils::authenticate_provider,
+    },
+    server::utils::errors::Result,
 };
 
 #[derive(Deserialize)]
@@ -64,7 +66,7 @@ pub(crate) async fn token_introspection(
                     id_token: Some(id_token),
                 }));
             }
-            return Ok(Json(Response::error()))
+            return Ok(Json(Response::error()));
         }
         if let Some(refresh_token) = RefreshToken::find()
             .filter(refresh_token::Column::Token.eq(&params.token))
@@ -80,7 +82,7 @@ pub(crate) async fn token_introspection(
                     id_token: Some(id_token),
                 }));
             }
-            return Ok(Json(Response::error()))
+            return Ok(Json(Response::error()));
         }
     }
     Ok(Json(Response::error()))

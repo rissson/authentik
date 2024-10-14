@@ -3,8 +3,9 @@ pub mod models;
 mod constants;
 mod id_token;
 mod utils;
-use authentik_server_utils::state::AppState;
 use axum::{Router, routing::post};
+
+use crate::server::utils::state::AppState;
 mod views;
 
 pub async fn make_router() -> Router<AppState> {

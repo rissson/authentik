@@ -1,5 +1,3 @@
-use authentik_common::{SETTINGS, constants};
-use authentik_server_utils::state::AppState;
 use axum::{
     Router,
     body::Body,
@@ -10,6 +8,11 @@ use axum::{
 };
 use http::{HeaderValue, uri::Uri};
 use tower_http::services::{Redirect, ServeDir};
+
+use crate::{
+    common::{SETTINGS, constants},
+    server::utils::state::AppState,
+};
 
 async fn static_header_middleware(request: Request, next: Next) -> Response {
     let mut response = next.run(request).await;
@@ -58,7 +61,7 @@ pub(super) fn make_router() -> Router<AppState> {
                 Response::builder()
                     .status(200)
                     .header("Content-Type", "text/plain")
-                    .body::<Body>(include_str!("../../../../web/robots.txt").into())
+                    .body::<Body>(include_str!("../../web/robots.txt").into())
                     .unwrap()
             }),
         )
@@ -68,7 +71,7 @@ pub(super) fn make_router() -> Router<AppState> {
                 Response::builder()
                     .status(200)
                     .header("Content-Type", "text/plain")
-                    .body::<Body>(include_str!("../../../../web/security.txt").into())
+                    .body::<Body>(include_str!("../../web/security.txt").into())
                     .unwrap()
             }),
         );

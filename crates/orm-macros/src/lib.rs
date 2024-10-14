@@ -28,7 +28,7 @@ pub fn derive_expiring_model(input: TokenStream) -> TokenStream {
     let name = input.ident;
 
     quote! {
-        impl authentik_orm_utils::expiring_model::ExpiringModel for #name {
+        impl crate::orm::utils::expiring_model::ExpiringModel for #name {
             fn is_expired(&self) -> bool {
                 chrono::Utc::now().with_timezone(&self.expires.timezone()) > self.expires
             }
@@ -44,12 +44,12 @@ pub fn derive_expiring_model_action(input: TokenStream) -> TokenStream {
 
     quote! {
         #[async_trait::async_trait]
-        impl authentik_orm_utils::expiring_model::ExpiringModelAction for #name {
+        impl crate::orm::utils::expiring_model::ExpiringModelAction for #name {
             type Entity = Entity;
 
             async fn expire_action<'a, A, C>(self, db: &'a C) -> Result<sea_orm::DeleteResult, sea_orm::DbErr>
             where
-                Self: sea_orm::IntoActiveModel<A> + authentik_orm_utils::expiring_model::ExpiringModel,
+                Self: sea_orm::IntoActiveModel<A> + crate::orm::utils::expiring_model::ExpiringModel,
                 C: sea_orm::ConnectionTrait,
                 A: sea_orm::ActiveModelTrait<Entity = Self::Entity> + sea_orm::ActiveModelBehavior + Send + 'a,
             {

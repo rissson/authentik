@@ -1,15 +1,24 @@
 [workspace]
 members = ["crates/*"]
-default-members = ["crates/*"]
 resolver = "2"
 
 [workspace.package]
+edition = "2021"
 rust-version = "1.81"
+license = "MIT"
 
-[workspace.dependencies]
+[package]
+name = "authentik"
+version = "2024.8.3"
+license.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+authentik-orm-macros = { path = "./crates/orm-macros" }
+
 anyhow = "1.0.89"
 async-trait = "0.1.83"
-authentik-common = { path = "../authentik-common" }
 axum = { version = "0.7.7", features = ["http2", "ws", "macros"] }
 axum-server = { version = "0.7.1", features = ["tls-openssl"] }
 chrono = { version = "0.4.38", features = ["serde"] }

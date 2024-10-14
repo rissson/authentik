@@ -195,7 +195,7 @@ impl Settings {
         };
         let config_builder = config::Config::builder()
             .add_source(config::File::from_str(
-                include_str!("../../../authentik/lib/default.yml"),
+                include_str!("../../authentik/lib/default.yml"),
                 config::FileFormat::Yaml,
             ))
             .add_source(config::File::with_name("/etc/authentik/config.yml").required(false))
