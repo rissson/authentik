@@ -1,4 +1,5 @@
 use anyhow::Result;
+use authentik_server_utils::state::AppState;
 use axum::{
     extract::{
         Request, State, WebSocketUpgrade,
@@ -11,10 +12,9 @@ use futures::{sink::SinkExt, stream::StreamExt};
 use hyper::Uri;
 use tokio_tungstenite::tungstenite::{self as ts};
 
-use super::WebState;
 use crate::utils::make_uri_parts;
 
-async fn handle_request(state: WebState, mut req: Request) -> Result<Response, StatusCode> {
+async fn handle_request(state: AppState, mut req: Request) -> Result<Response, StatusCode> {
     *req.uri_mut() =
         Uri::from_parts(make_uri_parts(&state.backend_uri, &req)).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
@@ -108,7 +108,7 @@ fn handle_ws(backend_uri: Uri, ws: WebSocketUpgrade, req: Request) -> impl IntoR
 }
 
 pub(super) async fn proxy_to_backend(
-    State(state): State<WebState>,
+    State(state): State<AppState>,
     ws: Option<WebSocketUpgrade>,
     req: Request,
 ) -> impl IntoResponse {

@@ -10,13 +10,16 @@ rust-version = "1.81"
 anyhow = "1.0.89"
 async-trait = "0.1.83"
 authentik-common = { path = "../authentik-common" }
-axum = { version = "0.7.7", features = ["http2", "ws"] }
+axum = { version = "0.7.7", features = ["http2", "ws", "macros"] }
 axum-server = { version = "0.7.1", features = ["tls-openssl"] }
 chrono = { version = "0.4.38", features = ["serde"] }
 config = "0.14.0"
+derivative = "2.2.0"
+either = "1.13.0"
 futures = "0.3.31"
 glob = "0.3.1"
 http = "1.1.0"
+http-auth-basic = "0.3.5"
 hyper = "1.4.1"
 hyper-util = "0.1.9"
 hyperlocal = "0.9.1"
@@ -26,6 +29,7 @@ openssl = "0.10.66"
 openssl-sys = "0.9.103"
 prometheus = { version = "0.13.4", features = ["process"] }
 pyo3 = { version = "0.22.3", features = ["auto-initialize"] }
+regex = "1.11.0"
 sea-orm = { version = "1.0.1", features = [
     "runtime-tokio-native-tls",
     "sqlx-postgres",
@@ -33,7 +37,10 @@ sea-orm = { version = "1.0.1", features = [
 ] }
 sentry = { version = "0.34.0", features = ["anyhow", "tower", "tracing"] }
 serde = { version = "1.0.210", features = ["derive"] }
+serde_json = "1.0.128"
+serde_with = "3.11.0"
 tempfile = "3.13.0"
+thiserror = "1.0.64"
 tokio = { version = "1.40.0", features = ["full"] }
 tokio-tungstenite = "0.24.0"
 tower-http = { version = "0.6.1", features = ["fs", "redirect", "trace"] }

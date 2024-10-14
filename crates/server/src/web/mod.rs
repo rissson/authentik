@@ -2,28 +2,21 @@ use std::time::Duration;
 
 use anyhow::Result;
 use authentik_common::SETTINGS;
+use authentik_server_utils::{backend::BackendClient, state::AppState};
 use axum::Router;
 use axum_server::{Handle, tls_openssl::OpenSSLConfig};
 use hyper::Uri;
 use nix::sys::signal::Signal;
-use sea_orm::{Database, DatabaseConnection};
+use sea_orm::Database;
 use tokio::sync::broadcast::{Receiver, Sender};
 
 use crate::{
-    backend::BackendClient,
     crypto::{generate_self_signed_cert, get_tls_acceptor_builder},
     utils::signal_handler,
 };
 
 mod assets;
 mod backend;
-
-#[derive(Clone)]
-struct WebState {
-    backend_uri: Uri,
-    backend_client: BackendClient,
-    db: DatabaseConnection,
-}
 
 async fn signal_handler_with_backend(
     handle: Handle,
@@ -67,7 +60,7 @@ async fn make_router(backend_uri: &Uri) -> Result<Router> {
         )
         .layer(sentry::integrations::tower::SentryLayer::new_from_top())
         .fallback(backend::proxy_to_backend)
-        .with_state(WebState {
+        .with_state(AppState {
             backend_uri: backend_uri.clone(),
             backend_client,
             db,

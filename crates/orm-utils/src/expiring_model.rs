@@ -1,6 +1,9 @@
 use async_trait::async_trait;
-use sea_orm::{DeleteResult, DbErr, ActiveModelTrait, ActiveModelBehavior, IntoActiveModel, ConnectionTrait, EntityTrait};
+use sea_orm::{
+    ActiveModelBehavior, ActiveModelTrait, ConnectionTrait, DbErr, DeleteResult, EntityTrait, IntoActiveModel,
+};
 
+/// Base trait for models that can expire and are automatically cleanup up
 pub trait ExpiringModel {
     fn is_expired(&self) -> bool;
 }
@@ -11,8 +14,7 @@ pub trait ExpiringModelAction {
 
     async fn expire_action<'a, A, C>(self, db: &'a C) -> Result<DeleteResult, DbErr>
     where
-        Self: IntoActiveModel<A>,
+        Self: IntoActiveModel<A> + ExpiringModel,
         C: ConnectionTrait,
-        A: ActiveModelTrait<Entity = Self::Entity> + ActiveModelBehavior + Send + 'a,
-    ;
+        A: ActiveModelTrait<Entity = Self::Entity> + ActiveModelBehavior + Send + 'a;
 }

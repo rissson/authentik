@@ -1,4 +1,5 @@
 use authentik_common::{SETTINGS, constants};
+use authentik_server_utils::state::AppState;
 use axum::{
     Router,
     body::Body,
@@ -9,8 +10,6 @@ use axum::{
 };
 use http::{HeaderValue, uri::Uri};
 use tower_http::services::{Redirect, ServeDir};
-
-use super::WebState;
 
 async fn static_header_middleware(request: Request, next: Next) -> Response {
     let mut response = next.run(request).await;
@@ -26,7 +25,7 @@ async fn static_header_middleware(request: Request, next: Next) -> Response {
     response
 }
 
-pub(super) fn make_router() -> Router<WebState> {
+pub(super) fn make_router() -> Router<AppState> {
     let web_dist_assets = ServeDir::new("./web/dist/assets");
 
     // Root file paths, from which they should be accessed

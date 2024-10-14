@@ -6,14 +6,10 @@ use std::{
 
 use anyhow::{Result, anyhow};
 use authentik_common::SETTINGS;
+use authentik_server_utils::backend::BackendClient;
 use axum::body::Body;
 use http::uri::PathAndQuery;
 use hyper::{Method, Request, Uri};
-use hyper_util::{
-    client::legacy::{Client, ResponseFuture, connect::HttpConnector},
-    rt::TokioExecutor,
-};
-use hyperlocal::UnixConnector;
 use nix::{
     sys::signal::{self, Signal},
     unistd::Pid,
@@ -23,37 +19,6 @@ use tokio::{
     sync::broadcast::Receiver,
     time::{Duration, interval},
 };
-
-type UnixClient = Client<UnixConnector, Body>;
-type HttpClient = Client<HttpConnector, Body>;
-
-#[derive(Clone)]
-pub(crate) enum BackendClient {
-    Http(HttpClient),
-    Unix(UnixClient),
-}
-
-impl BackendClient {
-    pub(crate) fn new(backend_uri: &Uri) -> Self {
-        match backend_uri.scheme_str() {
-            Some("unix") => {
-                let client = Client::builder(TokioExecutor::new()).build(UnixConnector);
-                Self::Unix(client)
-            }
-            _ => {
-                let client = Client::builder(TokioExecutor::new()).build_http();
-                Self::Http(client)
-            }
-        }
-    }
-
-    pub(crate) fn request(&self, req: Request<Body>) -> ResponseFuture {
-        match self {
-            Self::Http(client) => client.request(req),
-            Self::Unix(client) => client.request(req),
-        }
-    }
-}
 
 struct Backend {
     command: Command,

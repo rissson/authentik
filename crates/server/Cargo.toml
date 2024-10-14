@@ -7,6 +7,7 @@ rust-version.workspace = true
 [dependencies]
 authentik-common = { path = "../common" }
 authentik-providers-oauth2 = { path = "../providers-oauth2" }
+authentik-server-utils = { path = "../server-utils" }
 
 anyhow = { workspace = true }
 axum = { workspace = true }
