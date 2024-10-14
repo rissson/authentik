@@ -40,7 +40,7 @@ function run_authentik {
     if [[ -x "$(command -v authentik)" ]]; then
         exec authentik $@
     else
-        exec cargo run --bin authentik-server $@
+        exec cargo run --bin authentik $@
     fi
 }
 

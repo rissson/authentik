@@ -49,12 +49,12 @@ pub mod access_token {
         pub id: i32,
         pub provider_id: i32,
         pub revoked: bool,
-        #[sea_orm(column_type = "Text")]
+        #[sea_orm(column_name = "_scope", column_type = "Text")]
         pub _scope: String,
 
         #[sea_orm(column_type = "Text")]
         pub token: String,
-        #[sea_orm(column_type = "Text")]
+        #[sea_orm(column_name = "_id_token", column_type = "Text")]
         pub _id_token: String,
     }
 
@@ -104,12 +104,12 @@ pub mod refresh_token {
         pub id: i32,
         pub provider_id: i32,
         pub revoked: bool,
-        #[sea_orm(column_type = "Text")]
+        #[sea_orm(column_name = "_scope", column_type = "Text")]
         pub _scope: String,
 
         #[sea_orm(column_type = "Text")]
         pub token: String,
-        #[sea_orm(column_type = "Text")]
+        #[sea_orm(column_name = "_id_token", column_type = "Text")]
         pub _id_token: String,
     }
 
